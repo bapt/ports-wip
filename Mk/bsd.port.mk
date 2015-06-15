@@ -1090,9 +1090,7 @@ IGNORE=	Unknown flavor '${FLAVOUR}', possible flavors: ${FLAVOURS}.
 .if defined(.PARSEDIR)
 .MAKEOVERRIDES:=	${.MAKEOVERRIDES:NFLAVOUR}
 .else # old make
-.if ${.MAKEFLAGS:MFLAVOUR=*}
-IGNORE=	Error: FLAVOUR is an unsupported argument Use 'env FLAVOUR=${FLAVOUR} ${MAKE}' instead.
-.endif
+.MAKEFLAGS:=	${.MAKEFLAGS:MFLAVOUR=*}
 .endif
 .if defined(X_BUILD_FOR)
 .if !defined(.PARSEDIR)
@@ -4381,10 +4379,10 @@ _INSTALL_DEPENDS=	\
 				${ECHO_MSG} "===>   USE_PACKAGE_DEPENDS_ONLY set - not building missing dependency from source"; \
 				exit 1; \
 			else \
-			  (cd $$dir; ${MAKE} -DINSTALLS_DEPENDS $$target $$depends_args) ; \
+			  (cd $$dir; ${SETENV} FLAVOUR="" ${MAKE} -DINSTALLS_DEPENDS $$target $$depends_args) ; \
 			fi; \
 		elif [ -z "${STRICT_DEPENDS}" ]; then \
-			(cd $$dir; ${MAKE} -DINSTALLS_DEPENDS $$target $$depends_args) ; \
+			(cd $$dir; ${SETENV} FLAVOUR="" ${MAKE} -DINSTALLS_DEPENDS $$target $$depends_args) ; \
 		fi; \
 		${ECHO_MSG} "===>   Returning to build of ${PKGNAME}";
 
