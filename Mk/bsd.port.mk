@@ -1083,7 +1083,7 @@ MINIMAL_PKG_VERSION=	1.3.8
 
 .if !empty(FLAVOUR)
 .if ! ${FLAVOURS:M${FLAVOUR}}
-IGNORE=	Unknown flavor '${FLAVOUR}', possible flavors: ${FLAVOURS}.
+IGNORE=	Unknown flavour '${FLAVOUR}', possible flavours: ${FLAVOURS}.
 .endif
 .endif
 
