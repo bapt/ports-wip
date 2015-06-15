@@ -1088,9 +1088,7 @@ IGNORE=	Unknown flavor '${FLAVOUR}', possible flavors: ${FLAVOURS}.
 .endif
 
 .if defined(.PARSEDIR)
-.if ${.MAKEOVERRIDES:MFLAVOUR}
-IGNORE=	Error: FLAVOUR is an unsupported argument Use 'env FLAVOUR=${FLAVOUR} ${MAKE}' instead.
-.endif
+.MAKEOVERRIDES:=	${.MAKEOVERRIDES:NFLAVOUR}
 .else # old make
 .if ${.MAKEFLAGS:MFLAVOUR=*}
 IGNORE=	Error: FLAVOUR is an unsupported argument Use 'env FLAVOUR=${FLAVOUR} ${MAKE}' instead.
