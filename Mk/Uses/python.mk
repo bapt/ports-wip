@@ -290,9 +290,9 @@ PYTHON3_DEFAULT_VERSION?=	python${PYTHON3_DEFAULT}
 PYTHON3_DEFAULT_VERSION?=	python${PYTHON3_DEFAULT}
 .endif
 
-.if ${FLAVOR} == python2
+.if ${FLAVOUR} == python2
 _PYTHON_ARGS=		2
-.elif ${FLAVOR} == python3
+.elif ${FLAVOUR} == python3
 _PYTHON_ARGS=		3
 .endif
 
