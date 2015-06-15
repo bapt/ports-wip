@@ -1072,6 +1072,8 @@ SCRIPTSDIR?=	${PORTSDIR}/Mk/Scripts
 LIB_DIRS?=		/lib /usr/lib ${LOCALBASE}/lib
 STAGEDIR?=	${WRKDIR}/stage
 NOTPHONY?=
+FLAVOURS?=
+FLAVOUR?=
 MINIMAL_PKG_VERSION=	1.3.8
 
 # make sure bmake treats -V as expected
@@ -1079,6 +1081,24 @@ MINIMAL_PKG_VERSION=	1.3.8
 
 .include "${PORTSDIR}/Mk/bsd.commands.mk"
 
+.if !empty(FLAVOUR)
+.if ! ${FLAVOURS:M${FLAVOUR}}
+IGNORE=	Unknown flavor '${FLAVOUR}', possible flavors: ${FLAVOURS}.
+.endif
+.endif
+
+.if defined(.PARSEDIR)
+.if ${.MAKEOVERRIDES:MFLAVOUR}
+IGNORE=	Error: FLAVOUR is an unsupported argument Use 'env FLAVOUR=${FLAVOUR} ${MAKE}' instead.
+.endif
+.else # old make
+.if ${.MAKEFLAGS:MFLAVOUR=*}
+IGNORE=	Error: FLAVOUR is an unsupported argument Use 'env FLAVOUR=${FLAVOUR} ${MAKE}' instead.
+.endif
+.endif
+ .if defined(NO_STAGE)
+ BROKEN=				Not staged.
+ DEPRECATED?=		Not staged. See http://lists.freebsd.org/pipermail/freebsd-ports-announce/2014-May/000080.html
 .if defined(X_BUILD_FOR)
 .if !defined(.PARSEDIR)
 IGNORE=	Cross building can only be done when using bmake(1) as make(1)
@@ -1557,7 +1577,12 @@ MAKE_ENV+=		NM=${NM} \
 CONFIGURE_ENV+=	PKG_CONFIG_SYSROOT_DIR="${X_SYSROOT}"
 .endif
 
-WRKDIR?=		${WRKDIRPREFIX}${.CURDIR}/work
+.if empty(FLAVOUR)
+_WRKDIR=	work
+.else
+_WRKDIR=	work-${FLAVOUR}
+.endif
+WRKDIR?=		${WRKDIRPREFIX}${.CURDIR}/${_WRKDIR}
 .if !defined(IGNORE_MASTER_SITE_GITHUB) && defined(USE_GITHUB)
 WRKSRC?=		${WRKDIR}/${GH_PROJECT}-${GH_TAGNAME_EXTRACT}
 .endif
@@ -3941,13 +3966,15 @@ clean:
 	@cd ${.CURDIR} && ${MAKE} limited-clean-depends
 .endif
 	@${ECHO_MSG} "===>  Cleaning for ${PKGNAME}"
+.for _flavour in "" ${FLAVOURS}
 .if target(pre-clean)
-	@cd ${.CURDIR} && ${MAKE} pre-clean
+	@cd ${.CURDIR} && ${SETENV} FLAVOUR=${_flavour} ${MAKE} pre-clean
 .endif
-	@cd ${.CURDIR} && ${MAKE} do-clean
+	@cd ${.CURDIR} && ${SETENV} FLAVOUR=${_flavour} ${MAKE} do-clean
 .if target(post-clean)
-	@cd ${.CURDIR} && ${MAKE} post-clean
+	@cd ${.CURDIR} && ${SETENV} FLAVOUR=${_flavour} ${MAKE} post-clean
 .endif
+.endfor
 .endif
 
 .if !target(pre-distclean)
