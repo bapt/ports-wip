@@ -677,6 +677,7 @@
     SUBDIR += p5-Net-Subnet
     SUBDIR += p5-Net-Syslog
     SUBDIR += p5-Net-TCLink
+    SUBDIR += p5-Net-TacacsPlus
     SUBDIR += p5-Net-TcpDumpLog
     SUBDIR += p5-Net-Telnet
     SUBDIR += p5-Net-Telnet-Netscreen
@@ -914,7 +915,8 @@
     SUBDIR += py-ipaddress
     SUBDIR += py-iplib
     SUBDIR += py-kombu
-    SUBDIR += py-ldap2
+    SUBDIR += py-ldap
+    SUBDIR += py-ldap3
     SUBDIR += py-ldaptor
     SUBDIR += py-libcloud
     SUBDIR += py-libdnet
@@ -957,6 +959,7 @@
     SUBDIR += py-soapy
     SUBDIR += py-speedtest-cli
     SUBDIR += py-suds
+    SUBDIR += py-terminado
     SUBDIR += py-tofu
     SUBDIR += py-tweepy
     SUBDIR += py-twistedPair

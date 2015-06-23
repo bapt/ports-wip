@@ -12,10 +12,10 @@ MAINTAINER=	ports@FreeBSD.org
 COMMENT=	OO, component based, framework for molecular dynamics (MD) simulations
 
 LIB_DEPENDS=	libpng.so:${PORTSDIR}/graphics/png \
-		libjpeg.so:${PORTSDIR}/graphics/jpeg \
 		libtiff.so:${PORTSDIR}/graphics/tiff
 
 GNU_CONFIGURE=	yes
+USES=		jpeg
 USE_XORG=	xmu xt sm ice xext x11 xi
 
 # Hack to cure a misbehavior of the configure script
@@ -29,20 +29,17 @@ WRKSRC=		${WRKDIR}/${PORTNAME}
 OPTIONS_DEFINE=	GLUT
 OPTIONS_DEFAULT=	GLUT
 
-.include <bsd.port.options.mk>
+GLUT_CONFIGURE_ON=	--with-glut=yes
+GLUT_USE=	GL=glut
+GLUT_CONFIGURE_OFF=	--with-glut=no
 
-.if ${PORT_OPTIONS:MGLUT}
-CONFIGURE_ARGS+=	--with-glut=yes
-USE_GL=	glut
-.else
-CONFIGURE_ARGS+=	--with-glut=no
-.endif
+.include <bsd.port.options.mk>
 
 .if ${PORT_OPTIONS:MEXAMPLES}
 post-install:
 	@${MKDIR} ${STAGEDIR}${EXAMPLESDIR}
-	cd ${WRKSRC}/examples && ${FIND} . | ${EGREP} -v '\.cvsignore' | \
-		${CPIO} -pdmu -R ${SHAREOWN}:${SHAREGRP} ${STAGEDIR}${EXAMPLESDIR}
+	cd ${WRKSRC}/examples ; \
+		${COPYTREE_SHARE} .  ${STAGEDIR}${EXAMPLESDIR} "! -name .cvsignore"
 .endif
 
 .include <bsd.port.mk>
