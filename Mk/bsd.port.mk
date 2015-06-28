@@ -1070,8 +1070,8 @@ SCRIPTSDIR?=	${PORTSDIR}/Mk/Scripts
 LIB_DIRS?=		/lib /usr/lib ${LOCALBASE}/lib
 STAGEDIR?=	${WRKDIR}/stage
 NOTPHONY?=
-FLAVOURS?=
-FLAVOUR?=
+VARIANTS?=
+VARIANT?=
 MINIMAL_PKG_VERSION=	1.3.8
 
 # make sure bmake treats -V as expected
@@ -1079,16 +1079,16 @@ MINIMAL_PKG_VERSION=	1.3.8
 
 .include "${PORTSDIR}/Mk/bsd.commands.mk"
 
-.if !empty(FLAVOUR)
-.if ! ${FLAVOURS:M${FLAVOUR}}
-IGNORE=	Unknown flavour '${FLAVOUR}', possible flavours: ${FLAVOURS}.
+.if !empty(VARIANT)
+.if ! ${VARIANTS:M${VARIANT}}
+IGNORE=	Unknown variant '${VARIANT}', possible variants: ${VARIANTS}.
 .endif
 .endif
 
 .if defined(.PARSEDIR)
-.MAKEOVERRIDES:=	${.MAKEOVERRIDES:NFLAVOUR}
+.MAKEOVERRIDES:=	${.MAKEOVERRIDES:NVARIANT}
 .else # old make
-.MAKEFLAGS:=	${.MAKEFLAGS:MFLAVOUR=*}
+.MAKEFLAGS:=	${.MAKEFLAGS:MVARIANT=*}
 .endif
 .if defined(X_BUILD_FOR)
 .if !defined(.PARSEDIR)
@@ -1568,10 +1568,10 @@ MAKE_ENV+=		NM=${NM} \
 CONFIGURE_ENV+=	PKG_CONFIG_SYSROOT_DIR="${X_SYSROOT}"
 .endif
 
-.if empty(FLAVOUR)
+.if empty(VARIANT)
 _WRKDIR=	work
 .else
-_WRKDIR=	work-${FLAVOUR}
+_WRKDIR=	work-${VARIANT}
 .endif
 WRKDIR?=		${WRKDIRPREFIX}${.CURDIR}/${_WRKDIR}
 .if !defined(IGNORE_MASTER_SITE_GITHUB) && defined(USE_GITHUB)
@@ -3957,13 +3957,13 @@ clean:
 	@cd ${.CURDIR} && ${MAKE} limited-clean-depends
 .endif
 	@${ECHO_MSG} "===>  Cleaning for ${PKGNAME}"
-.for _flavour in "" ${FLAVOURS}
+.for _variant in "" ${VARIANTS}
 .if target(pre-clean)
-	@cd ${.CURDIR} && ${SETENV} FLAVOUR=${_flavour} ${MAKE} pre-clean
+	@cd ${.CURDIR} && ${SETENV} VARIANT=${_variant} ${MAKE} pre-clean
 .endif
-	@cd ${.CURDIR} && ${SETENV} FLAVOUR=${_flavour} ${MAKE} do-clean
+	@cd ${.CURDIR} && ${SETENV} VARIANT=${_variant} ${MAKE} do-clean
 .if target(post-clean)
-	@cd ${.CURDIR} && ${SETENV} FLAVOUR=${_flavour} ${MAKE} post-clean
+	@cd ${.CURDIR} && ${SETENV} VARIANT=${_variant} ${MAKE} post-clean
 .endif
 .endfor
 .endif
