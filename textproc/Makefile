@@ -30,6 +30,7 @@
     SUBDIR += archmage
     SUBDIR += artha
     SUBDIR += asciidoc
+    SUBDIR += asciinema
     SUBDIR += asm-xml
     SUBDIR += asm2html
     SUBDIR += aspell
@@ -161,7 +162,6 @@
     SUBDIR += estraier
     SUBDIR += et-aspell
     SUBDIR += exempi
-    SUBDIR += exmpp
     SUBDIR += expat2
     SUBDIR += exslt
     SUBDIR += extract_url
@@ -1244,6 +1244,7 @@
     SUBDIR += py-whoosh
     SUBDIR += py-wicked
     SUBDIR += py-wordnet
+    SUBDIR += py-wstools
     SUBDIR += py-wtforms
     SUBDIR += py-xlrd
     SUBDIR += py-xlutils
