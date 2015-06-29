@@ -128,6 +128,17 @@ for _line in ${dp_RAWDEPENDS} ; do
 		exit 1
 	fi
 
+	case "${last}" in
+	*=*)
+		IFS=\=
+		set -- ${last}
+		IFS=${myifs}
+		setvar $1 $2
+		export $1
+		last=""
+		;;
+	esac
+
 	case "${origin}" in
 	/*) ;;
 	*) origin="${dp_PORTSDIR}/${origin}" ;;

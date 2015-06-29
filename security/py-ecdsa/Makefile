@@ -13,6 +13,7 @@ COMMENT=	ECDSA cryptographic signature library (pure python)
 
 LICENSE=	MIT
 
+VARIANTS=	python2 python3
 USES=		python
 USE_PYTHON=	distutils autoplist
 

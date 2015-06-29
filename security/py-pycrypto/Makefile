@@ -11,6 +11,7 @@ PKGNAMEPREFIX=	${PYTHON_PKGNAMEPREFIX}
 MAINTAINER=	koobs@FreeBSD.org
 COMMENT=	Python Cryptography Toolkit
 
+VARIANTS=	python2 python3
 USES=		python
 USE_PYTHON=	distutils autoplist
 

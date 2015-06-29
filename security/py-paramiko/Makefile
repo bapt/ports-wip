@@ -12,8 +12,9 @@ COMMENT=	Python SSH2 protocol library
 
 LICENSE=	GPLv2
 
-RUN_DEPENDS=	${PYTHON_PKGNAMEPREFIX}pycrypto>0:${PORTSDIR}/security/py-pycrypto \
-		${PYTHON_PKGNAMEPREFIX}ecdsa>0:${PORTSDIR}/security/py-ecdsa
+VARIANTS=	python2 python3
+RUN_DEPENDS=	${PYTHON_PKGNAMEPREFIX}pycrypto>0:${PORTSDIR}/security/py-pycrypto:VARIANT=${VARIANT} \
+		${PYTHON_PKGNAMEPREFIX}ecdsa>0:${PORTSDIR}/security/py-ecdsa:VARIANT=${VARIANT}
 
 USES=		python
 USE_PYTHON=	distutils autoplist
