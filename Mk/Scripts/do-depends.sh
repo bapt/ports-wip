@@ -129,6 +129,7 @@ for _line in ${dp_RAWDEPENDS} ; do
 	fi
 
 	case "${last}" in
+	*=) last="" ;;
 	*=*)
 		IFS=\=
 		set -- ${last}
