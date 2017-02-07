@@ -3340,13 +3340,13 @@ _PORTS_DIRECTORIES+=	${PKGREPOSITORY}
 .endif
 
 .if defined(_HAVE_PACKAGES)
-.if ${PKGORIGIN} == "ports-mgmt/pkg" || ${PKGORIGIN} == "ports-mgmt/pkg-devel"
+.  if ${PKGORIGIN} == "ports-mgmt/pkg" || ${PKGORIGIN} == "ports-mgmt/pkg-devel"
 _EXTRA_PACKAGE_TARGET_DEP+=	${PKGLATESTREPOSITORY}
 _PORTS_DIRECTORIES+=	${PKGLATESTREPOSITORY}
 _EXTRA_PACKAGE_TARGET_DEP+=	${PKGLATESTFILE}
 ${PKGLATESTFILE}: ${PKGFILE} ${PKGLATESTREPOSITORY}
 	${INSTALL} -l rs ${PKGFILE} ${PKGLATESTFILE}
-.endif
+.  endif
 
 _EXTRA_PACKAGE_TARGET_DEP: ${PKGFILE}
 ${PKGFILE}: ${WRKDIR_PKGFILE} ${PKGREPOSITORY}
@@ -3363,13 +3363,12 @@ _EXTRA_PACKAGE_TARGET_DEP: ${WRKDIR_PKGFILE}
 
 .if !target(do-package)
 PKG_CREATE_ARGS=	-r ${STAGEDIR} -m ${METADIR} -p ${TMPPLIST}
-.if defined(PKG_CREATE_VERBOSE)
+.  if defined(PKG_CREATE_VERBOSE)
 PKG_CREATE_ARGS+=	-v
-.endif
+.  endif
 do-package: ${TMPPLIST} create-manifest ${_EXTRA_PACKAGE_TARGET_DEP} ${WRKDIR}/pkg
 	${DO_NADA}
 .endif
-# Some support rules for do-package
 
 .if !target(delete-package)
 delete-package:
