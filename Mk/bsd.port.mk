@@ -3350,9 +3350,6 @@ PKG_CREATE_ARGS+=	-v
 .endif
 do-package: create-manifest ${_EXTRA_PACKAGE_TARGET_DEP} ${WRKDIR}/pkg
 do-package: ${TMPPLIST}
-	@for cat in ${CATEGORIES}; do \
-		${RM} ${PACKAGES}/$$cat/${PKGNAMEPREFIX}${PORTNAME}*${PKG_SUFX} ; \
-	done
 	@if ${SETENV} ${PKG_ENV} FORCE_POST="${_FORCE_POST_PATTERNS}" ${PKG_CREATE} ${PKG_CREATE_ARGS} -f ${PKG_SUFX:S/.//} -o ${WRKDIR}/pkg ${PKGNAME}; then \
 		if [ -d ${PKGREPOSITORY} -a -w ${PKGREPOSITORY} ]; then \
 			${LN} -f ${WRKDIR_PKGFILE} ${PKGFILE} 2>/dev/null \
