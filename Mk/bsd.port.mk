@@ -3343,6 +3343,29 @@ ${PKGREPOSITORY}:
 ${WRKDIR}/pkg:
 	${MKDIR} ${WRKDIR}/pkg
 
+.if defined(_HAVE_PACKAGES)
+.if ${PKGORIGIN} == "ports-mgmt/pkg" || ${PKGORIGIN} == "ports-mgmt/pkg-devel"
+_EXTRA_PACKAGE_TARGET_DEP+=	${PKGLATESTREPOSITORY}
+${PKGLATESTREPOSITORY}:
+	${MKDIR} ${PKGLATESTREPOSITORY}
+_EXTRA_PACKAGE_TARGET_DEP+=	${PKGLATESTFILE}
+${PKGLATESTFILE}: ${PKGFILE} ${PKGLATESTREPOSITORY}
+	${INSTALL} -l rs ${PKGFILE} ${PKGLATESTFILE}
+.endif
+
+_EXTRA_PACKAGE_TARGET_DEP: ${PKGFILE}
+${PKGFILE}: ${WRKDIR_PKGFILE} ${PKGREPOSITORY}
+	${LN} -f ${WRKDIR_PKGFILE} ${PKGFILE} \
+			|| ${CP} -f ${WRKDIR_PKGFILE} ${PKGFILE}
+.endif
+
+${WRKDIR_PKGFILE}: ${TMPPLIST} create-manifest ${_EXTRA_PACKAGE_TARGET_DEP:N${PKGLATESTFILE}} ${WRKDIR}/pkg
+	@if ! ${SETENV} ${PKG_ENV} FORCE_POST="${_FORCE_POST_PATTERNS}" ${PKG_CREATE} ${PKG_CREATE_ARGS} -f ${PKG_SUFX:S/.//} -o ${WRKDIR}/pkg ${PKGNAME}; then \
+		cd ${.CURDIR} && eval ${MAKE} delete-package >/dev/null; \
+		exit 1; \
+	fi
+_EXTRA_PACKAGE_TARGET_DEP: ${WRKDIR_PKGFILE}
+
 .if !target(do-package)
 PKG_CREATE_ARGS=	-r ${STAGEDIR} -m ${METADIR} -p ${TMPPLIST}
 .if defined(PKG_CREATE_VERBOSE)
@@ -3350,27 +3373,6 @@ PKG_CREATE_ARGS+=	-v
 .endif
 do-package: create-manifest ${_EXTRA_PACKAGE_TARGET_DEP} ${WRKDIR}/pkg
 do-package: ${TMPPLIST}
-	@if ${SETENV} ${PKG_ENV} FORCE_POST="${_FORCE_POST_PATTERNS}" ${PKG_CREATE} ${PKG_CREATE_ARGS} -f ${PKG_SUFX:S/.//} -o ${WRKDIR}/pkg ${PKGNAME}; then \
-		if [ -d ${PKGREPOSITORY} -a -w ${PKGREPOSITORY} ]; then \
-			${LN} -f ${WRKDIR_PKGFILE} ${PKGFILE} 2>/dev/null \
-				|| ${CP} -f ${WRKDIR_PKGFILE} ${PKGFILE}; \
-			if [ "${PKGORIGIN}" = "ports-mgmt/pkg" -o "${PKGORIGIN}" = "ports-mgmt/pkg-devel" ]; then \
-				if [ ! -d ${PKGLATESTREPOSITORY} ]; then \
-					if ! ${MKDIR} ${PKGLATESTREPOSITORY}; then \
-						${ECHO_MSG} "=> Can't create directory ${PKGLATESTREPOSITORY}."; \
-						exit 1; \
-					fi; \
-				fi ; \
-				${LN} -sf ../${PKGREPOSITORYSUBDIR}/${PKGNAME}${PKG_SUFX} ${PKGLATESTFILE} ; \
-			fi; \
-		elif [ ! -d ${PACKAGES} ]; then \
-			${LN} -f ${WRKDIR_PKGFILE} ${PKGFILE} 2>/dev/null \
-				|| ${CP} -f ${WRKDIR_PKGFILE} ${PKGFILE}; \
-		fi; \
-	else \
-		cd ${.CURDIR} && eval ${MAKE} delete-package >/dev/null; \
-		exit 1; \
-	fi
 .endif
 # Some support rules for do-package
 
