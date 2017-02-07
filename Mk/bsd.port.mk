@@ -3091,7 +3091,7 @@ clean-wrkdir:
 	@${RM} -r ${WRKDIR}
 
 .if !target(do-extract)
-do-extract:
+do-extract: ${EXTRACT_WRKDIR}
 	@for file in ${EXTRACT_ONLY}; do \
 		if ! (cd ${EXTRACT_WRKDIR} && ${EXTRACT_CMD} ${EXTRACT_BEFORE_ARGS} ${_DISTDIR}/$$file ${EXTRACT_AFTER_ARGS});\
 		then \
