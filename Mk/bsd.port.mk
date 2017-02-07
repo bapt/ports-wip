@@ -2502,6 +2502,7 @@ check-categories:
 PKGREPOSITORYSUBDIR?=	All
 PKGREPOSITORY?=		${PACKAGES}/${PKGREPOSITORYSUBDIR}
 .if exists(${PACKAGES})
+_HAVE_PACKAGES=	yes
 PKGFILE?=		${PKGREPOSITORY}/${PKGNAME}${PKG_SUFX}
 .else
 PKGFILE?=		${.CURDIR}/${PKGNAME}${PKG_SUFX}
@@ -3333,21 +3334,19 @@ do-test:
 
 # Package
 
+.if defined(_HAVE_PACKAGES)
+_EXTRA_PACKAGE_TARGET_DEP=	${PKGREPOSITORY}
+${PKGREPOSITORY}:
+	${MKDIR} ${PKGREPOSITORY}
+.endif
+
 .if !target(do-package)
 PKG_CREATE_ARGS=	-r ${STAGEDIR} -m ${METADIR} -p ${TMPPLIST}
 .if defined(PKG_CREATE_VERBOSE)
 PKG_CREATE_ARGS+=	-v
 .endif
-do-package: create-manifest
+do-package: create-manifest ${_EXTRA_PACKAGE_TARGET_DEP}
 do-package: ${TMPPLIST}
-	@if [ -d ${PACKAGES} ]; then \
-		if [ ! -d ${PKGREPOSITORY} ]; then \
-			if ! ${MKDIR} ${PKGREPOSITORY}; then \
-				${ECHO_MSG} "=> Can't create directory ${PKGREPOSITORY}."; \
-				exit 1; \
-			fi; \
-		fi; \
-	fi
 	@for cat in ${CATEGORIES}; do \
 		${RM} ${PACKAGES}/$$cat/${PKGNAMEPREFIX}${PORTNAME}*${PKG_SUFX} ; \
 	done
