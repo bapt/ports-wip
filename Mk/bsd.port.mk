@@ -3340,17 +3340,19 @@ ${PKGREPOSITORY}:
 	${MKDIR} ${PKGREPOSITORY}
 .endif
 
+${WRKDIR}/pkg:
+	${MKDIR} ${WRKDIR}/pkg
+
 .if !target(do-package)
 PKG_CREATE_ARGS=	-r ${STAGEDIR} -m ${METADIR} -p ${TMPPLIST}
 .if defined(PKG_CREATE_VERBOSE)
 PKG_CREATE_ARGS+=	-v
 .endif
-do-package: create-manifest ${_EXTRA_PACKAGE_TARGET_DEP}
+do-package: create-manifest ${_EXTRA_PACKAGE_TARGET_DEP} ${WRKDIR}/pkg
 do-package: ${TMPPLIST}
 	@for cat in ${CATEGORIES}; do \
 		${RM} ${PACKAGES}/$$cat/${PKGNAMEPREFIX}${PORTNAME}*${PKG_SUFX} ; \
 	done
-	@${MKDIR} ${WRKDIR}/pkg
 	@if ${SETENV} ${PKG_ENV} FORCE_POST="${_FORCE_POST_PATTERNS}" ${PKG_CREATE} ${PKG_CREATE_ARGS} -f ${PKG_SUFX:S/.//} -o ${WRKDIR}/pkg ${PKGNAME}; then \
 		if [ -d ${PKGREPOSITORY} -a -w ${PKGREPOSITORY} ]; then \
 			${LN} -f ${WRKDIR_PKGFILE} ${PKGFILE} 2>/dev/null \
