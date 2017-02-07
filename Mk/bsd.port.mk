@@ -3366,8 +3366,8 @@ PKG_CREATE_ARGS=	-r ${STAGEDIR} -m ${METADIR} -p ${TMPPLIST}
 .if defined(PKG_CREATE_VERBOSE)
 PKG_CREATE_ARGS+=	-v
 .endif
-do-package: create-manifest ${_EXTRA_PACKAGE_TARGET_DEP} ${WRKDIR}/pkg
-do-package: ${TMPPLIST}
+do-package: ${TMPPLIST} create-manifest ${_EXTRA_PACKAGE_TARGET_DEP} ${WRKDIR}/pkg
+	${DO_NADA}
 .endif
 # Some support rules for do-package
 
