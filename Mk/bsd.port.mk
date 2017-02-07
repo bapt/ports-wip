@@ -3352,20 +3352,22 @@ ${PKGFILE}: ${WRKDIR_PKGFILE} ${PKGREPOSITORY}
 			|| ${CP} -f ${WRKDIR_PKGFILE} ${PKGFILE}
 .endif
 
-${WRKDIR_PKGFILE}: ${TMPPLIST} create-manifest ${_EXTRA_PACKAGE_TARGET_DEP:N${PKGLATESTFILE}} ${WRKDIR}/pkg
-	@if ! ${SETENV} ${PKG_ENV} FORCE_POST="${_FORCE_POST_PATTERNS}" ${PKG_CREATE} ${PKG_CREATE_ARGS} -f ${PKG_SUFX:S/.//} -o ${WRKDIR}/pkg ${PKGNAME}; then \
+${TMPPLIST}.${PKGFILE:R:T}: ${TMPPLIST}
+	${GREP} -Fv -e"@comment " ${TMPPLIST} > ${.TARGET}
+
+${WRKDIR_PKGFILE}: ${TMPPLIST}.${PKGFILE:R:T} create-manifest ${_EXTRA_PACKAGE_TARGET_DEP:N${PKGLATESTFILE}} ${WRKDIR}/pkg
+	@if ! ${SETENV} ${PKG_ENV} FORCE_POST="${_FORCE_POST_PATTERNS}" ${PKG_CREATE} ${PKG_CREATE_ARGS} -p ${TMPPLIST}.${PKGFILE:R:T} -f ${PKG_SUFX:S/.//} -o ${WRKDIR}/pkg ${PKGNAME}; then \
 		cd ${.CURDIR} && eval ${MAKE} delete-package >/dev/null; \
 		exit 1; \
 	fi
-_EXTRA_PACKAGE_TARGET_DEP: ${WRKDIR_PKGFILE}
+_EXTRA_PACKAGE_TARGET_DEP+= ${WRKDIR_PKGFILE}
 
 .if !target(do-package)
-PKG_CREATE_ARGS=	-r ${STAGEDIR} -m ${METADIR} -p ${TMPPLIST}
+PKG_CREATE_ARGS=	-r ${STAGEDIR} -m ${METADIR}
 .  if defined(PKG_CREATE_VERBOSE)
 PKG_CREATE_ARGS+=	-v
 .  endif
-do-package: ${TMPPLIST} create-manifest ${_EXTRA_PACKAGE_TARGET_DEP} ${WRKDIR}/pkg
-	${DO_NADA}
+do-package: create-manifest ${_EXTRA_PACKAGE_TARGET_DEP} ${WRKDIR}/pkg
 .endif
 
 .if !target(delete-package)
@@ -3851,7 +3853,7 @@ package-name:
 repackage: pre-repackage package
 
 pre-repackage:
-	@${RM} ${PACKAGE_COOKIE}
+	@${RM} ${PACKAGE_COOKIE} ${TMPPLIST}*
 .endif
 
 # Build a package but don't check the cookie for installation, also don't
