@@ -2937,7 +2937,7 @@ options-message:
 	@${ECHO_MSG} "===>  Found saved configuration for ${_OPTIONS_READ}"
 .endif
 
-_PORTS_DIRECTORIES+=	${PKG_DBDIR} ${PREFIX} ${WRKDIR} ${EXTRA_WRKDIR}
+_PORTS_DIRECTORIES+=	${PKG_DBDIR} ${PREFIX} ${WRKDIR} ${EXTRACT_WRKDIR}
 _PORTS_DIRECTORIES+=	${WRKDIR}/pkg ${STAGEDIR}${PREFIX}
 
 # Warn user about deprecated packages.  Advisory only.
