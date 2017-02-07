@@ -2938,6 +2938,7 @@ options-message:
 .endif
 
 _PORTS_DIRECTORIES+=	${PKG_DBDIR} ${PREFIX} ${WRKDIR} ${EXTRA_WRKDIR}
+_PORTS_DIRECTORIES+=	${WRKDIR}/pkg ${STAGEDIR}${PREFIX}
 
 # Warn user about deprecated packages.  Advisory only.
 
@@ -3337,7 +3338,6 @@ do-test:
 _EXTRA_PACKAGE_TARGET_DEP=	${PKGREPOSITORY}
 _PORTS_DIRECTORIES+=	${PKGREPOSITORY}
 .endif
-_PORTS_DIRECTORIES+=	${WRKDIR}/pkg
 
 .if defined(_HAVE_PACKAGES)
 .if ${PKGORIGIN} == "ports-mgmt/pkg" || ${PKGORIGIN} == "ports-mgmt/pkg-devel"
@@ -4362,10 +4362,11 @@ ${i:S/-//:tu}=	${WRKDIR}/${SUB_FILES:M${i}*}
 # Generate packing list.  Also tests to make sure all required package
 # files exist.
 
+_PORTS_DIRECTORIES+=	${TMPPLIST:H}
+
 .if !target(generate-plist)
-generate-plist: ${WRKDIR}
+generate-plist: ${WRKDIR} ${TMPPLIST:H}
 	@${ECHO_MSG} "===>   Generating temporary packing list"
-	@${MKDIR} ${TMPPLIST:H}
 	@if [ ! -f ${DESCR} ]; then ${ECHO_MSG} "** Missing pkg-descr for ${PKGNAME}."; exit 1; fi
 	@>${TMPPLIST}
 	@for file in ${PLIST_FILES}; do \
@@ -4526,8 +4527,7 @@ compress-man:
 .endif
 
 .if !target(stage-dir)
-stage-dir:
-	@${MKDIR} ${STAGEDIR}${PREFIX}
+stage-dir: ${STAGEDIR}${PREFIX}
 .if !defined(NO_MTREE)
 	@${MTREE_CMD} ${MTREE_ARGS} ${STAGEDIR}${PREFIX} > /dev/null
 .endif
