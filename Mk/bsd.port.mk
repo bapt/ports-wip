@@ -2937,8 +2937,7 @@ options-message:
 	@${ECHO_MSG} "===>  Found saved configuration for ${_OPTIONS_READ}"
 .endif
 
-${PKG_DBDIR} ${PREFIX} ${WRKDIR} ${EXTRACT_WRKDIR}:
-	@${MKDIR} ${.TARGET}
+_PORTS_DIRECTORIES+=	${PKG_DBDIR} ${PREFIX} ${WRKDIR} ${EXTRA_WRKDIR}
 
 # Warn user about deprecated packages.  Advisory only.
 
@@ -3336,18 +3335,14 @@ do-test:
 
 .if defined(_HAVE_PACKAGES)
 _EXTRA_PACKAGE_TARGET_DEP=	${PKGREPOSITORY}
-${PKGREPOSITORY}:
-	${MKDIR} ${PKGREPOSITORY}
+_PORTS_DIRECTORIES+=	${PKGREPOSITORY}
 .endif
-
-${WRKDIR}/pkg:
-	${MKDIR} ${WRKDIR}/pkg
+_PORTS_DIRECTORIES+=	${WRKDIR}/pkg
 
 .if defined(_HAVE_PACKAGES)
 .if ${PKGORIGIN} == "ports-mgmt/pkg" || ${PKGORIGIN} == "ports-mgmt/pkg-devel"
 _EXTRA_PACKAGE_TARGET_DEP+=	${PKGLATESTREPOSITORY}
-${PKGLATESTREPOSITORY}:
-	${MKDIR} ${PKGLATESTREPOSITORY}
+_PORTS_DIRECTORIES+=	${PKGLATESTREPOSITORY}
 _EXTRA_PACKAGE_TARGET_DEP+=	${PKGLATESTFILE}
 ${PKGLATESTFILE}: ${PKGFILE} ${PKGLATESTREPOSITORY}
 	${INSTALL} -l rs ${PKGFILE} ${PKGLATESTFILE}
@@ -5365,6 +5360,9 @@ ${${target:tu}_COOKIE}::
 .endif # !exists(cookie)
 
 .endfor # foreach(targets)
+
+${_PORTS_DIRECTORIES}:
+	${MKDIR} ${.TARGET}
 
 .PHONY: ${_PHONY_TARGETS} check-sanity fetch pkg
 
