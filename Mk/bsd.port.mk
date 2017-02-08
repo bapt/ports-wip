@@ -3089,7 +3089,7 @@ clean-wrkdir:
 	@${RM} -r ${WRKDIR}
 
 .if !target(do-extract)
-do-extract: ${EXTRACT_WRKDIR}
+do-extract:
 	@for file in ${EXTRACT_ONLY}; do \
 		if ! (cd ${EXTRACT_WRKDIR} && ${EXTRACT_CMD} ${EXTRACT_BEFORE_ARGS} ${_DISTDIR}/$$file ${EXTRACT_AFTER_ARGS});\
 		then \
@@ -5177,6 +5177,9 @@ show-dev-errors:
 .endif
 .endif #DEVELOPER
 
+${_PORTS_DIRECTORIES}:
+	${MKDIR} ${.TARGET}
+
 # Please note that the order of the following targets is important, and
 # should not be modified.
 
@@ -5356,9 +5359,6 @@ ${${target:tu}_COOKIE}::
 .endif # !exists(cookie)
 
 .endfor # foreach(targets)
-
-${_PORTS_DIRECTORIES}:
-	${MKDIR} ${.TARGET}
 
 .PHONY: ${_PHONY_TARGETS} check-sanity fetch pkg
 
