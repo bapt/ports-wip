@@ -2110,6 +2110,7 @@ PKGMESSAGE?=	${PKGDIR}/pkg-message
 _PKGMESSAGES+=	${PKGMESSAGE}
 
 TMPPLIST?=	${WRKDIR}/.PLIST.mktmp
+_PLIST?=	${WRKDIR}/.PLIST
 
 .if defined(PKG_NOCOMPRESS)
 PKG_SUFX?=		.tar
@@ -3352,11 +3353,15 @@ ${PKGFILE}: ${WRKDIR_PKGFILE} ${PKGREPOSITORY}
 			|| ${CP} -f ${WRKDIR_PKGFILE} ${PKGFILE}
 .endif
 
-${TMPPLIST}.${PKGFILE:R:T}: ${TMPPLIST}
-	${GREP} -Fv -e"@comment " ${TMPPLIST} > ${.TARGET}
+${_PLIST}.${PKGFILE:R:T:S/-${PKGVERSION}//}: ${TMPPLIST}
+	if [ "${PKGBASE}" = "${.TARGET:T:S/.PLIST.//}" ]; then \
+		${GREP} -Fv -e"@comment " -e"@@" ${TMPPLIST} > ${.TARGET} ; \
+	else \
+		${SED} -n "s/@@${.TARGET:T:S/.PLIST.${PKGBASE}-//}@@//p" ${TMPPLIST} > ${.TARGET} ; \
+	fi
 
-${WRKDIR_PKGFILE}: ${TMPPLIST}.${PKGFILE:R:T} create-manifest ${_EXTRA_PACKAGE_TARGET_DEP:N${PKGLATESTFILE}} ${WRKDIR}/pkg
-	@if ! ${SETENV} ${PKG_ENV} FORCE_POST="${_FORCE_POST_PATTERNS}" ${PKG_CREATE} ${PKG_CREATE_ARGS} -p ${TMPPLIST}.${PKGFILE:R:T} -f ${PKG_SUFX:S/.//} -o ${WRKDIR}/pkg ${PKGNAME}; then \
+${WRKDIR_PKGFILE}: ${_PLIST}.${PKGFILE:R:T:S/-${PKGVERSION}//} create-manifest ${_EXTRA_PACKAGE_TARGET_DEP:N${PKGLATESTFILE}} ${WRKDIR}/pkg
+	@if ! ${SETENV} ${PKG_ENV} FORCE_POST="${_FORCE_POST_PATTERNS}" ${PKG_CREATE} ${PKG_CREATE_ARGS} -p ${_PLIST}.${PKGFILE:R:T:-${PKGVERSION}=} -f ${PKG_SUFX:S/.//} -o ${WRKDIR}/pkg ${PKGNAME}; then \
 		cd ${.CURDIR} && eval ${MAKE} delete-package >/dev/null; \
 		exit 1; \
 	fi
