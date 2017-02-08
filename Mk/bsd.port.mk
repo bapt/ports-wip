@@ -3367,9 +3367,9 @@ ${_PLIST}.${p}: ${TMPPLIST}
 		${SED} -n "s/@@${.TARGET:T:S/.PLIST.${PKGBASE}-//}@@//p" ${TMPPLIST} > ${.TARGET} ; \
 	fi
 
-${${p}_WRKDIR_PKGFILE}: ${_PLIST}.${p} create-manifest ${_EXTRA_PACKAGE_TARGET_DEP:N${PKGLATESTFILE}} ${WRKDIR}/pkg
+${${p}_WRKDIR_PKGFILE}: ${_PLIST}.${p} create-manifest.${p} ${_EXTRA_PACKAGE_TARGET_DEP:N${PKGLATESTFILE}} ${WRKDIR}/pkg
 	@echo "===>   Building ${p}-${PKGVERSION}"
-	@if ! ${SETENV} ${PKG_ENV} FORCE_POST="${_FORCE_POST_PATTERNS}" ${PKG_CREATE} ${PKG_CREATE_ARGS} -p ${_PLIST}.${p} -f ${PKG_SUFX:S/.//} -o ${WRKDIR}/pkg ${PKGNAME}; then \
+	@if ! ${SETENV} ${PKG_ENV} FORCE_POST="${_FORCE_POST_PATTERNS}" ${PKG_CREATE} ${PKG_CREATE_ARGS} -m ${METADIR}.${p} -p ${_PLIST}.${p} -f ${PKG_SUFX:S/.//} -o ${WRKDIR}/pkg ${PKGNAME}; then \
 		cd ${.CURDIR} && eval ${MAKE} delete-package >/dev/null; \
 		exit 1; \
 	fi
@@ -3382,11 +3382,11 @@ _EXTRA_PACKAGE_TARGET_DEP+= ${${p}_PKGFILE}
 .endfor
 
 .if !target(do-package)
-PKG_CREATE_ARGS=	-r ${STAGEDIR} -m ${METADIR}
+PKG_CREATE_ARGS=	-r ${STAGEDIR}
 .  if defined(PKG_CREATE_VERBOSE)
 PKG_CREATE_ARGS+=	-v
 .  endif
-do-package: create-manifest ${_EXTRA_PACKAGE_TARGET_DEP} ${WRKDIR}/pkg
+do-package: ${_EXTRA_PACKAGE_TARGET_DEP} ${WRKDIR}/pkg
 .endif
 
 .if !target(delete-package)
@@ -4172,7 +4172,8 @@ PKG_NOTES_ENV?=
 PKG_NOTES_ENV+=	dp_PKG_NOTE_${note}=${PKG_NOTE_${note}:Q}
 .endfor
 
-create-manifest:
+.for p in ${_PKGS}
+create-manifest.${p}:
 	@${SETENV} \
 			dp_SCRIPTSDIR='${SCRIPTSDIR}'                         \
 			dp_ACTUAL_PACKAGE_DEPENDS='${ACTUAL-PACKAGE-DEPENDS}' \
@@ -4186,9 +4187,9 @@ create-manifest:
 			dp_LICENSE='${LICENSE:u:S/$/,/}'                      \
 			dp_LICENSE_COMB='${LICENSE_COMB}'                     \
 			dp_MAINTAINER='${MAINTAINER}'                         \
-			dp_METADIR='${METADIR}'                               \
+			dp_METADIR='${METADIR}.${p}'                          \
 			dp_NO_ARCH='${NO_ARCH}'                               \
-			dp_PKGBASE='${PKGBASE}'                               \
+			dp_PKGBASE='${p}'                                     \
 			dp_PKGDEINSTALL='${PKGDEINSTALL}'                     \
 			dp_PKGINSTALL='${PKGINSTALL}'                         \
 			dp_PKGMESSAGES='${_PKGMESSAGES}'                      \
@@ -4210,6 +4211,7 @@ create-manifest:
 			dp_WWW='${WWW}'                                       \
 			${PKG_NOTES_ENV}                                      \
 			${SH} ${SCRIPTSDIR}/create-manifest.sh
+.endfor
 
 
 # Print out package names.
@@ -4578,7 +4580,10 @@ stage-qa:
 STAGE_ARGS=		-i ${STAGEDIR}
 
 .if !defined(NO_PKG_REGISTER)
-fake-pkg: create-manifest
+.for p in ${_PKGS}
+fake-pkg: create-manifest.${p}
+.endfor
+fake-pkg:
 .if defined(INSTALLS_DEPENDS)
 	@${ECHO_MSG} "===>   Registering installation for ${PKGNAME} as automatic"
 .else
@@ -4589,7 +4594,7 @@ fake-pkg: create-manifest
 .else
 	@${SETENV} ${PKG_ENV} FORCE_POST="${_FORCE_POST_PATTERNS}" ${PKG_REGISTER} ${STAGE_ARGS} -m ${METADIR} -f ${TMPPLIST}
 .endif
-	@${RM} -r ${METADIR}
+	@${RM} -r ${METADIR}*
 .endif
 .endif
 
