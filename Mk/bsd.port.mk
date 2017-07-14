@@ -3683,11 +3683,14 @@ do-clean:
 .endif
 
 .if !target(clean)
+pre-clean: clean-msg
+clean-msg:
+	@${ECHO_MSG} "===>  Cleaning for ${PKGNAME}"
+
 clean:
 .if !defined(NOCLEANDEPENDS)
 	@cd ${.CURDIR} && ${MAKE} limited-clean-depends
 .endif
-	@${ECHO_MSG} "===>  Cleaning for ${PKGNAME}"
 .for _f in ${FLAVORS}
 .if target(pre-clean)
 	@cd ${.CURDIR} && ${SETENV} FLAVOR=${_f} ${MAKE} pre-clean
