@@ -128,6 +128,7 @@ for _line in ${dp_RAWDEPENDS} ; do
 	*) origin="${PORTSDIR}/${origin}" ;;
 	esac
 	case "${origin}" in
+	*@*/*) ;; # Ignore @ in the path which would not be a flavor
 	*@*)
 		export FLAVOR="${origin##*@}"
 		origin=${origin%@*}
