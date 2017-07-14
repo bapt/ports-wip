@@ -1521,6 +1521,11 @@ PKG_NOTES+=	expiration_date
 PKG_NOTE_expiration_date=	${EXPIRATION_DATE}
 .endif
 
+.if !empty(FLAVOR)
+PKG_NOTES+=	flavor
+PKG_NOTE_flavor=	${FLAVOR}
+.endif
+
 TEST_ARGS?=		${MAKE_ARGS}
 TEST_ENV?=		${MAKE_ENV}
 
