@@ -1736,6 +1736,19 @@ PKG_DEPENDS+=	${LOCALBASE}/sbin/pkg:${PKG_ORIGIN}
 .include "${PORTSDIR}/Mk/bsd.gcc.mk"
 .endif
 
+.if !defined(USE_BINUTILS)
+_TEST_LD=/usr/bin/ld
+.  if defined(LLD_UNSAFE) && ${_TEST_LD:tA} == "/usr/bin/ld.lld"
+.    if exists(/usr/bin/ld.bfd)
+LD=	/usr/bin/ld.bfd
+CONFIGURE_ENV+=	LD=${LD}
+MAKE_ENV+=	LD=${LD}
+.    else
+USE_BINUTILS=	yes
+.    endif
+.  endif
+.endif
+
 .if defined(USE_BINUTILS) && !defined(DISABLE_BINUTILS)
 BUILD_DEPENDS+=	${LOCALBASE}/bin/as:devel/binutils
 BINUTILS?=	ADDR2LINE AR AS CPPFILT GPROF LD NM OBJCOPY OBJDUMP RANLIB \
