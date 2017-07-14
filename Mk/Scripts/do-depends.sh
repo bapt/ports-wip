@@ -94,6 +94,8 @@ find_lib()
 anynotfound=0
 err=0
 for _line in ${dp_RAWDEPENDS} ; do
+	# ensure we never leak flavors
+	unset FLAVOR
 	myifs=${IFS}
 	IFS=:
 	set -- ${_line}
@@ -120,6 +122,18 @@ for _line in ${dp_RAWDEPENDS} ; do
 		err=1
 		continue
 	fi
+
+	case "${last}" in
+	*=) last="" ;;
+	*=*)
+		IFS=\=
+		set -- ${last}
+		IFS=${myifs}
+		setvar $1 $2
+		export $1
+		last=""
+		;;
+	esac
 
 	case "${origin}" in
 	/*) ;;

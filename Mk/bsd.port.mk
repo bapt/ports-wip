@@ -1056,6 +1056,8 @@ SCRIPTSDIR?=	${PORTSDIR}/Mk/Scripts
 LIB_DIRS?=		/lib /usr/lib ${LOCALBASE}/lib
 STAGEDIR?=	${WRKDIR}/stage
 NOTPHONY?=
+FLAVORS?=
+FLAVOR?=
 MINIMAL_PKG_VERSION=	1.6.0
 
 _PORTS_DIRECTORIES+=	${PKG_DBDIR} ${PREFIX} ${WRKDIR} ${EXTRACT_WRKDIR} \
@@ -1065,6 +1067,21 @@ _PORTS_DIRECTORIES+=	${PKG_DBDIR} ${PREFIX} ${WRKDIR} ${EXTRACT_WRKDIR} \
 .MAKE.EXPAND_VARIABLES= yes
 
 .include "${PORTSDIR}/Mk/bsd.commands.mk"
+
+.if !empty(FLAVOR)
+.  if empty(FLAVORS)
+IGNORE=	FLAVOR is defined while this port does not have FLAVORS.
+.  elif ! ${FLAVORS:M${FLAVOR}}
+IGNORE=	Unknown flavor '${FLAVOR}', possible flavors: ${FLAVORS}.
+.  endif
+.endif
+
+.if !empty(FLAVORS) && empty(FLAVOR)
+FLAVOR=	${FLAVORS:[1]}
+.endif
+
+# Do not leak flavors to childs make
+.MAKEOVERRIDES:=	${MAKEOVERRIDES:NFLAVOR=*}
 
 .if defined(CROSS_TOOLCHAIN)
 .if !defined(CROSS_SYSROOT)
@@ -1570,7 +1587,13 @@ MAKE_ENV+=		NM=${NM} \
 CONFIGURE_ENV+=	PKG_CONFIG_SYSROOT_DIR="${CROSS_SYSROOT}"
 .endif
 
-WRKDIR?=		${WRKDIRPREFIX}${.CURDIR}/work
+.if empty(FLAVOR)
+_WRKDIR=	work
+.else
+_WRKDIR=	work-${FLAVOR}
+.endif
+
+WRKDIR?=		${WRKDIRPREFIX}${.CURDIR}/${_WRKDIR}
 .if !defined(IGNORE_MASTER_SITE_GITHUB) && defined(USE_GITHUB) && empty(USE_GITHUB:Mnodefault)
 WRKSRC?=		${WRKDIR}/${GH_PROJECT}-${GH_TAGNAME_EXTRACT}
 .endif
@@ -3665,13 +3688,15 @@ clean:
 	@cd ${.CURDIR} && ${MAKE} limited-clean-depends
 .endif
 	@${ECHO_MSG} "===>  Cleaning for ${PKGNAME}"
+.for _f in ${FLAVORS}
 .if target(pre-clean)
-	@cd ${.CURDIR} && ${MAKE} pre-clean
+	@cd ${.CURDIR} && ${SETENV} FLAVOR=${_f} ${MAKE} pre-clean
 .endif
-	@cd ${.CURDIR} && ${MAKE} do-clean
+	@cd ${.CURDIR} &&  ${SETENV} FLAVOR=${_f} ${MAKE} do-clean
 .if target(post-clean)
-	@cd ${.CURDIR} && ${MAKE} post-clean
+	@cd ${.CURDIR} &&  ${SETENV} FLAVOR=${_f} ${MAKE} post-clean
 .endif
+.endfor
 .endif
 
 .if !target(distclean)

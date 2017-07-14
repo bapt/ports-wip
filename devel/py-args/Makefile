@@ -16,4 +16,6 @@ LICENSE=	BSD2CLAUSE
 USES=		python
 USE_PYTHON=	distutils autoplist
 
+FLAVORS=	python2 python3
+
 .include <bsd.port.mk>
