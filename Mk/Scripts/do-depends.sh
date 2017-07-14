@@ -102,7 +102,7 @@ for _line in ${dp_RAWDEPENDS} ; do
 	IFS=${myifs}
 	if [ $# -lt 2 -o $# -gt 3 ]; then
 		echo "Error: bad dependency syntax in ${dp_DEPTYPE}" >&2
-		echo "expecting: pattern:origin[:target]" >&2
+		echo "expecting: pattern:origin[@flavour][:target]" >&2
 		echo "got: ${_line}" >&2
 		err=1
 		continue
@@ -123,21 +123,15 @@ for _line in ${dp_RAWDEPENDS} ; do
 		continue
 	fi
 
-	case "${last}" in
-	*=) last="" ;;
-	*=*)
-		IFS=\=
-		set -- ${last}
-		IFS=${myifs}
-		setvar $1 $2
-		export $1
-		last=""
-		;;
-	esac
-
 	case "${origin}" in
 	/*) ;;
 	*) origin="${PORTSDIR}/${origin}" ;;
+	esac
+	case "${origin}" in
+	*@*)
+		export FLAVOR="${origin##*@}"
+		origin=${origin%@*}
+		;;
 	esac
 
 	depends_args="${dp_DEPENDS_ARGS}"

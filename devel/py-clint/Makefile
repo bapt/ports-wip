@@ -15,7 +15,7 @@ LICENSE=	ISCL
 
 FLAVORS=	python2 python3
 
-RUN_DEPENDS=	${PYTHON_PKGNAMEPREFIX}args>=0.1.0:devel/py-args:FLAVOR=${FLAVOR}
+RUN_DEPENDS=	${PYTHON_PKGNAMEPREFIX}args>=0.1.0:devel/py-args@${FLAVOR}
 
 USES=		python
 USE_PYTHON=	autoplist distutils
