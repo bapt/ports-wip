@@ -2218,6 +2218,7 @@ PKGMESSAGE?=	${PKGDIR}/pkg-message
 _PKGMESSAGES+=	${PKGMESSAGE}
 
 TMPPLIST?=	${WRKDIR}/.PLIST.mktmp
+_PLIST?=	${WRKDIR}/.PLIST
 
 .if defined(PKG_NOCOMPRESS)
 PKG_SUFX?=		.tar
@@ -3417,8 +3418,16 @@ ${PKGLATESTFILE}: ${PKGFILE} ${PKGLATESTREPOSITORY}
 .endif
 
 # from here this will become a loop for subpackages
-${WRKDIR_PKGFILE}: ${TMPPLIST} create-manifest ${WRKDIR}/pkg
-	@if ! ${SETENV} ${PKG_ENV} FORCE_POST="${_FORCE_POST_PATTERNS}" ${PKG_CREATE} ${PKG_CREATE_ARGS} -m ${METADIR} -p ${TMPPLIST} -f ${PKG_SUFX:S/.//} -o ${WRKDIR}/pkg ${PKGNAME}; then \
+
+${_PLIST}.${PKGFILE:R:T:S/-${PKGVERSION}//}: ${TMPPLIST}
+	if [ "${PKGBASE}" = "${.TARGET:T:S/.PLIST.//}" ]; then \
+		${GREP} -Fv -e"@comment " -e"@@" ${TMPPLIST} > ${.TARGET} ; \
+	else \
+		${SED} -n "s/@@${.TARGET:T:S/.PLIST.${PKGBASE}-//}@@//p" ${TMPPLIST} > ${.TARGET} ; \
+	fi
+
+${WRKDIR_PKGFILE}:  ${_PLIST}.${PKGFILE:R:T:S/-${PKGVERSION}//} create-manifest ${WRKDIR}/pkg
+	@if ! ${SETENV} ${PKG_ENV} FORCE_POST="${_FORCE_POST_PATTERNS}" ${PKG_CREATE} ${PKG_CREATE_ARGS} -m ${METADIR} -p ${_PLIST}.${PKGFILE:R:T:S/-${PKGVERSION}//} -f ${PKG_SUFX:S/.//} -o ${WRKDIR}/pkg ${PKGNAME}; then \
 		cd ${.CURDIR} && eval ${MAKE} delete-package >/dev/null; \
 		exit 1; \
 	fi
@@ -3977,7 +3986,7 @@ package-name:
 repackage: pre-repackage package
 
 pre-repackage:
-	@${RM} ${PACKAGE_COOKIE}
+	@${RM} ${PACKAGE_COOKIE} ${TMPPLIST}*
 .endif
 
 # Build a package but don't check the cookie for installation, also don't
