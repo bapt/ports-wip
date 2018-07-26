@@ -3437,9 +3437,9 @@ ${_PLIST}.${p}: ${TMPPLIST}
 		${SED} -n "s/@@${.TARGET:T:S/.PLIST.${PKGBASE}-//}@@//p" ${TMPPLIST} > ${.TARGET} ; \
 	fi
 
-${${p}_WRKDIR_PKGFILE}: ${_PLIST}.${p} create-manifest ${WRKDIR}/pkg
+${${p}_WRKDIR_PKGFILE}: ${_PLIST}.${p} create-manifest.${p} ${WRKDIR}/pkg
 	@echo "===>    Building ${p}-${PKGVERSION}"
-	@if ! ${SETENV} ${PKG_ENV} FORCE_POST="${_FORCE_POST_PATTERNS}" ${PKG_CREATE} ${PKG_CREATE_ARGS} -m ${METADIR} -p ${_PLIST}.${p} -f ${PKG_SUFX:S/.//} -o ${WRKDIR}/pkg ${PKGNAME}; then \
+	@if ! ${SETENV} ${PKG_ENV} FORCE_POST="${_FORCE_POST_PATTERNS}" ${PKG_CREATE} ${PKG_CREATE_ARGS} -m ${METADIR}.${p} -p ${_PLIST}.${p} -f ${PKG_SUFX:S/.//} -o ${WRKDIR}/pkg ${PKGNAME}; then \
 		cd ${.CURDIR} && eval ${MAKE} delete-package >/dev/null; \
 		exit 1; \
 	fi
@@ -4303,7 +4303,8 @@ PKG_NOTES_ENV?=
 PKG_NOTES_ENV+=	dp_PKG_NOTE_${note}=${PKG_NOTE_${note}:Q}
 .endfor
 
-create-manifest:
+.for p in ${_PKGS}
+create-manifest.${p}:
 	@${SETENV} \
 			dp_SCRIPTSDIR='${SCRIPTSDIR}'                         \
 			dp_ACTUAL_PACKAGE_DEPENDS='${ACTUAL-PACKAGE-DEPENDS}' \
@@ -4317,9 +4318,9 @@ create-manifest:
 			dp_LICENSE='${LICENSE:u:S/$/,/}'                      \
 			dp_LICENSE_COMB='${LICENSE_COMB}'                     \
 			dp_MAINTAINER='${MAINTAINER}'                         \
-			dp_METADIR='${METADIR}'                               \
+			dp_METADIR='${METADIR}.${p}'                          \
 			dp_NO_ARCH='${NO_ARCH}'                               \
-			dp_PKGBASE='${PKGBASE}'                               \
+			dp_PKGBASE='${p}'                                     \
 			dp_PKGDEINSTALL='${PKGDEINSTALL}'                     \
 			dp_PKGINSTALL='${PKGINSTALL}'                         \
 			dp_PKGMESSAGES='${_PKGMESSAGES}'                      \
@@ -4340,7 +4341,8 @@ create-manifest:
 			dp_USERS='${USERS:u:S/$/,/}'                          \
 			dp_WWW='${WWW}'                                       \
 			${PKG_NOTES_ENV}                                      \
-			${SH} ${SCRIPTSDIR}/create-manifest.sh
+			${SH} -x ${SCRIPTSDIR}/create-manifest.sh
+.endfor
 
 
 # Print out package names.
@@ -4728,6 +4730,9 @@ flavors-package-names: .PHONY
 STAGE_ARGS=		-i ${STAGEDIR}
 
 .if !defined(NO_PKG_REGISTER)
+.for p in ${_PKGS}
+fake-pkg: create-manifest.${p}
+.endfor
 fake-pkg:
 .if defined(INSTALLS_DEPENDS)
 	@${ECHO_MSG} "===>   Registering installation for ${PKGNAME} as automatic"
@@ -5317,7 +5322,6 @@ _TEST_SEQ=		100:test-message 150:test-depends 300:pre-test 500:do-test \
 _INSTALL_DEP=	stage
 _INSTALL_SEQ=	100:install-message \
 				200:check-already-installed \
-				300:create-manifest
 _INSTALL_SUSEQ=	400:fake-pkg 500:security-check
 
 _PACKAGE_DEP=	stage
