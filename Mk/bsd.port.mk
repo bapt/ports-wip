@@ -2608,19 +2608,31 @@ check-categories:
 
 PKGREPOSITORYSUBDIR?=	All
 PKGREPOSITORY?=		${PACKAGES}/${PKGREPOSITORYSUBDIR}
-.if exists(${PACKAGES})
-PACKAGES:=	${PACKAGES:S/:/\:/g}
-_HAVE_PACKAGES=	yes
-PKGFILE?=		${PKGREPOSITORY}/${PKGNAME}${PKG_SUFX}
-.else
-PKGFILE?=		${.CURDIR}/${PKGNAME}${PKG_SUFX}
-.endif
-WRKDIR_PKGFILE=	${WRKDIR}/pkg/${PKGNAME}${PKG_SUFX}
 
 # The "latest version" link -- ${PKGNAME} minus everthing after the last '-'
 PKGLATESTREPOSITORY?=	${PACKAGES}/Latest
 PKGBASE?=			${PKGNAMEPREFIX}${PORTNAME}${PKGNAMESUFFIX}
 PKGLATESTFILE=		${PKGLATESTREPOSITORY}/${PKGBASE}${PKG_SUFX}
+
+_PKGS=	${PKGBASE}
+.for p in ${SUBPACKAGES}
+PKGS+=	${PKGBASE}-${p}
+.endfor
+
+.if exists(${PACKAGES})
+-PACKAGES:=	${PACKAGES:S/:/\:/g}
+_HAVE_PACKAGES=	yes
+_PKGDIR=	${PKGREPOSITORY}
+.else
+_PKGDIR=	${.CURDIR}
+.endif
+.  for p in ${_PKGS}
+${p}_PKGFILE=	${_PKGDIR}/${p}-${PKGVERSION}${PKG_SUFX}
+.  endfor
+_EXTRA_PACKAGE_TARGET_DEP+=	${_PKGDIR}
+.for p in ${_PKGS}
+${p}_WRKDIR_PKGFILE=	${WRKDIR}/pkg/${p}-${PKGVERSION}${PKG_SUFX}
+.endfor
 
 CONFIGURE_SCRIPT?=	configure
 CONFIGURE_CMD?=		./${CONFIGURE_SCRIPT}
@@ -3402,10 +3414,6 @@ do-test:
 _EXTRA_PACKAGE_TARGET_DEP+= ${PKGFILE}
 _PORTS_DIRECTORIES+=	${PKGREPOSITORY}
 
-${PKGFILE}: ${WRKDIR_PKGFILE} ${PKGREPOSITORY}
-	@${LN} -f ${WRKDIR_PKGFILE} ${PKGFILE} 2>/dev/null \
-			|| ${CP} -f ${WRKDIR_PKGFILE} ${PKGFILE}
-
 .  if ${PKGORIGIN} == "ports-mgmt/pkg" || ${PKGORIGIN} == "ports-mgmt/pkg-devel"
 _EXTRA_PACKAGE_TARGET_DEP+=	${PKGLATESTREPOSITORY}
 _PORTS_DIRECTORIES+=	${PKGLATESTREPOSITORY}
@@ -3413,28 +3421,37 @@ _EXTRA_PACKAGE_TARGET_DEP+=	${PKGLATESTFILE}
 
 ${PKGLATESTFILE}: ${PKGFILE} ${PKGLATESTREPOSITORY}
 	${INSTALL} -l rs ${PKGFILE} ${PKGLATESTFILE}
+
+.for p in ${_PKGS}
+
+.endfor
 .  endif
 
 .endif
 
-# from here this will become a loop for subpackages
-
-${_PLIST}.${PKGFILE:R:T:S/-${PKGVERSION}//}: ${TMPPLIST}
-	if [ "${PKGBASE}" = "${.TARGET:T:S/.PLIST.//}" ]; then \
+.for p in ${_PKGS}
+${_PLIST}.${p}: ${TMPPLIST}
+	@if [ "${PKGBASE}" = "${.TARGET:T:S/.PLIST.//}" ]; then \
 		${GREP} -Fv -e"@comment " -e"@@" ${TMPPLIST} > ${.TARGET} ; \
 	else \
 		${SED} -n "s/@@${.TARGET:T:S/.PLIST.${PKGBASE}-//}@@//p" ${TMPPLIST} > ${.TARGET} ; \
 	fi
 
-${WRKDIR_PKGFILE}:  ${_PLIST}.${PKGFILE:R:T:S/-${PKGVERSION}//} create-manifest ${WRKDIR}/pkg
-	@if ! ${SETENV} ${PKG_ENV} FORCE_POST="${_FORCE_POST_PATTERNS}" ${PKG_CREATE} ${PKG_CREATE_ARGS} -m ${METADIR} -p ${_PLIST}.${PKGFILE:R:T:S/-${PKGVERSION}//} -f ${PKG_SUFX:S/.//} -o ${WRKDIR}/pkg ${PKGNAME}; then \
+${${p}_WRKDIR_PKGFILE}: ${_PLIST}.${p} create-manifest ${WRKDIR}/pkg
+	@echo "===>    Building ${p}-${PKGVERSION}"
+	@if ! ${SETENV} ${PKG_ENV} FORCE_POST="${_FORCE_POST_PATTERNS}" ${PKG_CREATE} ${PKG_CREATE_ARGS} -m ${METADIR} -p ${_PLIST}.${p} -f ${PKG_SUFX:S/.//} -o ${WRKDIR}/pkg ${PKGNAME}; then \
 		cd ${.CURDIR} && eval ${MAKE} delete-package >/dev/null; \
 		exit 1; \
 	fi
-	#
-# Temporary will be later dynamically added per subpackages
-_EXTRA_PACKAGE_TARGET_DEP+=	${WRKDIR_PKGFILE}
-# This will be the end of the loop
+
+_EXTRA_PACKAGE_TARGET_DEP+=	${${p}_WRKDIR_PKGFILE}
+
+${${p}_PKGFILE}: ${${p}_WRKDIR_PKGFILE}
+	@${LN} -f ${${p}_WRKDIR_PKGFILE} ${${p}_PKGFILE} \
+		|| ${CP} -f ${${p}_WRKDIR_PKGFILE} ${${p}_PKGFILE}
+
+_EXTRA_PACKAGE_TARGET_DEP+=	${${p}_PKGFILE}
+.endfor
 
 .if !target(do-package)
 PKG_CREATE_ARGS=	-r ${STAGEDIR}
@@ -3660,7 +3677,7 @@ install-message:
 test-message:
 	@${ECHO_MSG} "===>  Testing for ${PKGNAME}"
 package-message:
-	@${ECHO_MSG} "===>  Building package for ${PKGNAME}"
+	@${ECHO_MSG} "===>  Building packages for ${PKGNAME}"
 
 # Empty pre-* and post-* targets
 
